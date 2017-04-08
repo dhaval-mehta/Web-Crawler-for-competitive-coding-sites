@@ -48,8 +48,9 @@ Contributor(s):
         <property name="show_sql">true</property>
         <property name="format_sql">true</property>
         <property name="hibernate.enable_lazy_load_no_trans">true</property>
-        
+
         <mapping class="model.Problem"/>
         <mapping class="model.SampleInputOutput"/>
+        <mapping class="model.Tutorial"/>
     </session-factory>
 </hibernate-configuration>

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package controller;
+package resources;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -24,7 +24,7 @@ import service.ContestService;
 @Path("/contests")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class ContestController
+public class ContestResource
 {
 
     @GET

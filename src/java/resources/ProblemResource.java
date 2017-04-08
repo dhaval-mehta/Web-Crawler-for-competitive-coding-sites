@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package controller;
+package resources;
 
 import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -17,7 +19,7 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.NoContentException;
 import javax.ws.rs.core.UriInfo;
 import model.Platform;
 import model.Problem;
@@ -32,25 +34,25 @@ import service.ProblemService;
 @ApplicationPath("webapi")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class ProblemController extends Application
+public class ProblemResource extends Application
 {
 
     @GET
     @Path("/{id}")
-    public Response getProblem(@PathParam("id") int id)
+    public Problem getProblem(@PathParam("id") int id)
     {
 	Problem problem = ProblemService.getProblem(id);
 
 	if (problem == null)
 	{
-	    return Response.status(Response.Status.NOT_FOUND).build();
+	    throw new NotFoundException();
 	}
 
-	return Response.ok(problem).build();
+	return problem;
     }
 
     @GET
-    public Response getProblems(@Context UriInfo uriInfo)
+    public List<ProblemInfo> getProblems(@Context UriInfo uriInfo) throws NoContentException
     {
 	MultivaluedMap<String, String> queryParameterMap = uriInfo.getQueryParameters();
 
@@ -60,7 +62,7 @@ public class ProblemController extends Application
 	List<Integer> platforms = new ArrayList<>();
 	if (platformsInString != null)
 	{
-	    for (String string : platformsInString)
+	    platformsInString.forEach((string) ->
 	    {
 		try
 		{
@@ -68,18 +70,18 @@ public class ProblemController extends Application
 		}
 		catch (Exception e)
 		{
-		    return Response.status(Response.Status.BAD_REQUEST).build();
+		    throw new BadRequestException("Invalid Platform", e);
 		}
-	    }
+	    });
 	}
 
-	List<ProblemInfo> problemList = ProblemService.getProblems(platforms, tags);
+	List<ProblemInfo> problems = ProblemService.getProblems(platforms, tags);
 
-	if (problemList.isEmpty())
+	if (problems.isEmpty())
 	{
-	    return Response.status(Response.Status.NOT_FOUND).build();
+	    throw new NoContentException("No Problems found.");
 	}
 
-	return Response.ok(problemList).build();
+	return problems;
     }
 }
