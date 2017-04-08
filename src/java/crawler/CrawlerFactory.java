@@ -30,5 +30,4 @@ class CrawlerFactory
 		throw new IllegalArgumentException();
 	}
     }
-
 }
