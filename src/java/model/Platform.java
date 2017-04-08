@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public enum Platform
 {
-    Codeforces, Topcoder, HackerEarth;
+    Codeforces, Topcoder, HackerEarth, CodeChef, HackerRank, Spoj;
 
     private static final Map<Integer, Platform> INT_TO_ENUM_MAP;
 

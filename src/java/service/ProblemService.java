@@ -81,11 +81,10 @@ public class ProblemService
 	return problems;
     }
 
-    public static Problem getProblems(int id)
+    public static Problem getProblem(int id)
     {
 	Session session = HibernateUtil.getSessionFactory().openSession();
 	Problem problem = (Problem) session.get(Problem.class, id);
-	System.err.println(problem);
 	session.close();
 	return problem;
     }

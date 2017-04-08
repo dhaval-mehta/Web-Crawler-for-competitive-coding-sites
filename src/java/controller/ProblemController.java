@@ -39,8 +39,7 @@ public class ProblemController extends Application
     @Path("/{id}")
     public Response getProblem(@PathParam("id") int id)
     {
-	Problem problem = ProblemService.getProblems(id);
-	System.err.println(problem);
+	Problem problem = ProblemService.getProblem(id);
 
 	if (problem == null)
 	{
@@ -53,11 +52,12 @@ public class ProblemController extends Application
     @GET
     public Response getProblems(@Context UriInfo uriInfo)
     {
-	List<Integer> platforms = new ArrayList<>();
 	MultivaluedMap<String, String> queryParameterMap = uriInfo.getQueryParameters();
+
 	List<String> tags = queryParameterMap.get("tag");
 	List<String> platformsInString = queryParameterMap.get("platform");
 
+	List<Integer> platforms = new ArrayList<>();
 	if (platformsInString != null)
 	{
 	    for (String string : platformsInString)

@@ -5,13 +5,14 @@
  */
 package controller;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import model.Contest;
 import service.ContestService;
@@ -29,16 +30,15 @@ public class ContestController
     @GET
     public List<Contest> getContests()
     {
-	List<Contest> contests = null;
 	try
 	{
-	    contests = ContestService.getContests();
+	    List<Contest> contests = ContestService.getContests();
+	    return contests;
 	}
-	catch (Exception ex)
+	catch (IOException | ParseException ex)
 	{
-	    Logger.getLogger(ContestController.class.getName()).log(Level.SEVERE, null, ex);
+	    throw new WebApplicationException(ex);
 	}
-	System.err.println(contests);
-	return contests;
+
     }
 }

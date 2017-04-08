@@ -17,6 +17,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ws.rs.core.UriBuilder;
 import model.Contest;
 import model.Platform;
 import org.jsoup.Jsoup;
@@ -31,7 +32,10 @@ import org.jsoup.select.Elements;
 public class ContestService
 {
 
-    private static final String CODEFORCES_CONTEST_PAGE_URL = "http://www.codeforces.com/contests";
+    private static final String CODEFORCES_CONTEST_PAGE_URL = "http://codeforces.com/contests";
+    private static final String CODEFORCES_QUERY_PARAMETER_NAME = "complete";
+    private static final String CODEFORCES_QUERY_PARAMETER_VALUE = "true";
+    private static final String CODECHEF_CONTEST_PAGE_URL = "https://www.codechef.com/contests";
     private static List<Contest> contests = new ArrayList<>();
     private static Date gatheredTime = null;
 
@@ -57,10 +61,10 @@ public class ContestService
 	Date date = new Date();
 	long diff = TimeUnit.MILLISECONDS.toMinutes(date.getTime() - gatheredTime.getTime());
 
-	if (diff > 1)
-	{
-	    gatherContestInfo();
-	}
+//	if (diff > 1)
+//	{
+	gatherContestInfo();
+//	}
 
 	return contests;
     }
@@ -69,12 +73,15 @@ public class ContestService
     {
 	contests.clear();
 	addCodeforcesContests();
+	addCodechefContests();
 	gatheredTime = new Date();
     }
 
     private static void addCodeforcesContests() throws MalformedURLException, ParseException, IOException
     {
-	Document document = Jsoup.connect(CODEFORCES_CONTEST_PAGE_URL).get();
+	String url;
+	url = UriBuilder.fromUri(CODEFORCES_CONTEST_PAGE_URL).queryParam(CODEFORCES_QUERY_PARAMETER_NAME, CODEFORCES_QUERY_PARAMETER_VALUE).build().toString();
+	Document document = Jsoup.connect(url).get();
 	Element pageContent = document.getElementById("pageContent");
 	Element datatable = pageContent.getElementsByClass("datatable").first();
 	Element contestTable = datatable.getElementsByTag("tbody").first();
@@ -91,7 +98,7 @@ public class ContestService
 	    Elements cells = row.children();
 
 	    Element titleCell = cells.first();
-	    String name = titleCell.text();
+	    String name = titleCell.ownText();
 
 	    Element dateCell = cells.get(2);
 	    SimpleDateFormat sdf = new SimpleDateFormat("MMM/dd/yyyy HH:mm");
@@ -100,6 +107,37 @@ public class ContestService
 	    Date date = sdf.parse(dateCell.text());
 	    Contest contest = new Contest(name, contestUrl, platform, date);
 	    contests.add(contest);
+	}
+    }
+
+    private static void addCodechefContests() throws IOException, ParseException
+    {
+	Document document = Jsoup.connect(CODECHEF_CONTEST_PAGE_URL).get();
+	Element primaryContent = document.getElementById("primary-content");
+	Elements dataTable = primaryContent.getElementsByTag("table");
+
+	Platform platform = Platform.CodeChef;
+
+	for (int i = 0; i < 2; i++)
+	{
+	    Element Contests = dataTable.get(i);
+	    Elements rows = Contests.getElementsByTag("tr");
+	    rows.remove(0);
+
+	    for (Element row : rows)
+	    {
+		Elements cells = row.getElementsByTag("td");
+		Element contestElement = cells.get(1);
+		String name = contestElement.text();
+		String contestUrlString = contestElement.getElementsByTag("a").first().absUrl("href");
+		URL contestUrl = new URL(contestUrlString);
+		String dateString = cells.get(2).attr("data-starttime");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+		Date date = sdf.parse(dateString);
+		Contest contest = new Contest(name, contestUrl, platform, date);
+		System.err.println(contest);
+		contests.add(contest);
+	    }
 	}
     }
 
