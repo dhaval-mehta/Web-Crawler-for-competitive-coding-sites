@@ -35,6 +35,7 @@ public class ContestService
     private static final String CODECHEF_CONTEST_PAGE_URL = "https://www.codechef.com/contests";
     private static final String SPOJ_CONTEST_PAGE_URL = "http://www.spoj.com/contests";
     private static final String CODEFORCES_CONTEST_PAGE_URL = "http://codeforces.com/contests";
+    private static final String HACKERRANK_CONTEST_PAGE_URL = "http://www.hackerrank.com/contests";
     private static final String CODEFORCES_QUERY_PARAMETER_NAME = "complete";
     private static final String CODEFORCES_QUERY_PARAMETER_VALUE = "true";
     private static final List<Contest> CONTEST_LIST = new ArrayList<>();
@@ -59,10 +60,10 @@ public class ContestService
 	Date date = new Date();
 	long diff = TimeUnit.MILLISECONDS.toMinutes(date.getTime() - gatheredTime.getTime());
 
-//	if (diff > 1)
-//	{
-	gatherContestInfo();
-//	}
+	if (diff > 1)
+	{
+	    gatherContestInfo();
+	}
 
 	return CONTEST_LIST;
     }
@@ -73,6 +74,7 @@ public class ContestService
 	addCodeforcesContests();
 	addCodechefContests();
 	addSpojContests();
+	addHackerRankContests();
 	gatheredTime = new Date();
     }
 
@@ -163,6 +165,32 @@ public class ContestService
 		Contest contest = new Contest(name, contestUrl, platform, date);
 		CONTEST_LIST.add(contest);
 	    }
+	}
+    }
+
+    private static void addHackerRankContests() throws IOException, ParseException
+    {
+	Platform platform = Platform.HackerRank;
+	Document document = Jsoup.connect(HACKERRANK_CONTEST_PAGE_URL).get();
+	Element contestElement = document.getElementsByClass("active_contests").first();
+	Elements contestList = contestElement.getElementsByTag("li");
+
+	for (Element contestInfo : contestList)
+	{
+
+	    Elements infos = contestInfo.getElementsByTag("div").first().children();
+	    String name = infos.get(0).text();
+	    URL contestUrl = new URL(infos.get(2).child(0).absUrl("href"));
+	    Element metaElement = infos.get(1).getElementsByTag("meta").first();
+	    Date date = null;
+	    if (metaElement != null)
+	    {
+		String dateString = metaElement.attr("content");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		date = sdf.parse(dateString);
+	    }
+	    Contest contest = new Contest(name, contestUrl, platform, date);
+	    CONTEST_LIST.add(contest);
 	}
     }
 }
