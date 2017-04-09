@@ -32,11 +32,12 @@ import org.jsoup.select.Elements;
 public class ContestService
 {
 
+    private static final String CODECHEF_CONTEST_PAGE_URL = "https://www.codechef.com/contests";
+    private static final String SPOJ_CONTEST_PAGE_URL = "http://www.spoj.com/contests";
     private static final String CODEFORCES_CONTEST_PAGE_URL = "http://codeforces.com/contests";
     private static final String CODEFORCES_QUERY_PARAMETER_NAME = "complete";
     private static final String CODEFORCES_QUERY_PARAMETER_VALUE = "true";
-    private static final String CODECHEF_CONTEST_PAGE_URL = "https://www.codechef.com/contests";
-    private static List<Contest> contests = new ArrayList<>();
+    private static final List<Contest> CONTEST_LIST = new ArrayList<>();
     private static Date gatheredTime = null;
 
     static
@@ -45,14 +46,11 @@ public class ContestService
 	{
 	    gatherContestInfo();
 	}
-	catch (MalformedURLException | ParseException ex)
+	catch (ParseException | IOException ex)
 	{
 	    Logger.getLogger(ContestService.class.getName()).log(Level.SEVERE, null, ex);
 	}
-	catch (IOException ex)
-	{
-	    Logger.getLogger(ContestService.class.getName()).log(Level.SEVERE, null, ex);
-	}
+
 	gatheredTime = new Date();
     }
 
@@ -66,14 +64,15 @@ public class ContestService
 	gatherContestInfo();
 //	}
 
-	return contests;
+	return CONTEST_LIST;
     }
 
     private static void gatherContestInfo() throws MalformedURLException, ParseException, IOException
     {
-	contests.clear();
+	CONTEST_LIST.clear();
 	addCodeforcesContests();
 	addCodechefContests();
+	addSpojContests();
 	gatheredTime = new Date();
     }
 
@@ -106,7 +105,7 @@ public class ContestService
 
 	    Date date = sdf.parse(dateCell.text());
 	    Contest contest = new Contest(name, contestUrl, platform, date);
-	    contests.add(contest);
+	    CONTEST_LIST.add(contest);
 	}
     }
 
@@ -135,10 +134,35 @@ public class ContestService
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 		Date date = sdf.parse(dateString);
 		Contest contest = new Contest(name, contestUrl, platform, date);
-		System.err.println(contest);
-		contests.add(contest);
+		CONTEST_LIST.add(contest);
 	    }
 	}
     }
 
+    private static void addSpojContests() throws IOException, ParseException
+    {
+	Platform platform = Platform.Spoj;
+
+	Document document = Jsoup.connect(SPOJ_CONTEST_PAGE_URL).get();
+	Element contentElement = document.getElementById("content");
+	Elements contestsElement = contentElement.getElementsByClass("col-md-6");
+
+	for (Element element : contestsElement)
+	{
+	    Elements rows = element.getElementsByTag("tr");
+	    rows.remove(0);
+
+	    for (Element row : rows)
+	    {
+		Elements tableCells = row.getElementsByTag("td");
+		String name = tableCells.get(0).text();
+		URL contestUrl = new URL(tableCells.get(0).child(0).absUrl("href"));
+		String dateString = tableCells.get(1).child(0).attr("title");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = sdf.parse(dateString);
+		Contest contest = new Contest(name, contestUrl, platform, date);
+		CONTEST_LIST.add(contest);
+	    }
+	}
+    }
 }
