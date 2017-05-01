@@ -10,9 +10,9 @@ import java.text.ParseException;
 import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import model.Contest;
 import service.ContestService;
@@ -35,10 +35,13 @@ public class ContestResource
 	    List<Contest> contests = ContestService.getContests();
 	    return contests;
 	}
-	catch (IOException | ParseException ex)
+	catch (ParseException ex)
 	{
-	    throw new WebApplicationException(ex);
+	    throw new InternalServerErrorException("Cannot Parse Date.", ex);
 	}
-
+	catch (IOException ex)
+	{
+	    throw new InternalServerErrorException("IO Error.", ex);
+	}
     }
 }

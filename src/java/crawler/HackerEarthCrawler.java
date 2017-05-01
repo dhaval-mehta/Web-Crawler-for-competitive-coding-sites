@@ -5,6 +5,7 @@
  */
 package crawler;
 
+import hibernate.HibernateUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -15,7 +16,11 @@ import java.util.logging.Logger;
 import model.Platform;
 import model.Problem;
 import model.SampleInputOutput;
+import model.Tutorial;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -102,6 +107,7 @@ public class HackerEarthCrawler implements Crawler
 	//set of urls which should be crawled
 	TreeSet<String> linksset = new TreeSet<String>();
 	TreeSet<String> tempset = new TreeSet<String>();
+	TreeSet<String> tutorialset = new TreeSet<String>();
 	//final set of problem urls
 	TreeSet<String> problemset = new TreeSet<String>();
 	//visited for maintaing status of if url is already crawled or not
@@ -139,6 +145,10 @@ public class HackerEarthCrawler implements Crawler
 			//retrive all urls
 			for (Element link : links)
 			{
+			    if (link.absUrl("href").endsWith("/tutorial/"))
+			    {
+				tutorialset.add(link.absUrl("href"));
+			    }
 			    //check if url is problem url then add it in problemurlset
 			    if (link.absUrl("href").startsWith("https://www.hackerearth.com/") && isProblemUrl(link.absUrl("href")))
 			    {
@@ -518,68 +528,150 @@ public class HackerEarthCrawler implements Crawler
 		    problem.getTags().add(strtag);
 		}
 
+		//store in database
+		Session session = null;
+		Transaction transaction = null;
+		try
+		{
+		    //start session
+		    session = HibernateUtil.getSessionFactory().openSession();
+		    transaction = session.beginTransaction();
 
-		/*
-                //store in database
+		    //check if problem is already stored in database
+		    String hql = "FROM Problem p where p.problemUrl = :problem_url";
+		    Problem oldProblem = (Problem) session.createQuery(hql).setString("problem_url", problemUrl).uniqueResult();
+		    String task;
 
-                Session session = null;
-                Transaction transaction = null;
-                try
-                {
-                    //start session
-                    session = HibernateUtil.getSessionFactory().openSession();
-                    transaction = session.beginTransaction();
+		    //if problem is present in database
+		    if (oldProblem != null)
+		    {
+			//update the old problem
+			task = "updated";
+			//retrieve id of old problem
+			problem.setId(oldProblem.getId());
+			session.delete(oldProblem);
+			session.flush();
+			session.save(problem);
+		    }
+		    else
+		    {
+			task = "saved";
+			session.save(problem);
+		    }
 
-                    //check if problem is already stored in database
-                    String hql = "FROM Problem p where p.problemUrl = :problem_url";
-                    Problem oldProblem = (Problem) session.createQuery(hql).setString("problem_url", problemUrl).uniqueResult();
-                    String task;
-
-                    //if problem is present in database
-                    if (oldProblem != null)
-                    {
-                        //update the old problem
-                        task = "updated";
-                        //retrieve id of old problem
-                        problem.setId(oldProblem.getId());
-                        session.delete(oldProblem);
-                        session.flush();
-                        session.save(problem);
-                    }
-                    else
-                    {
-                        task = "saved";
-                        session.save(problem);
-                    }
-
-                    transaction.commit();
-                    //log the info to console
-                    Logger.getLogger(CodeForcesCrawler.class.getName()).log(Level.INFO, "{0} {1}", new Object[]
-                    {
-                        task, problem.getProblemUrl()
-                    });
-                }
-                catch (HibernateException ee)
-                {
-                    if (transaction != null)
-                    {
-                        transaction.rollback();
-                    }
-                    Logger.getLogger(CodeForcesCrawler.class.getName()).log(Level.SEVERE, "Cannot Insert/Update problem into databse: " + problemUrl, e);
-                }
-                finally
-                {
-                    //close the session
-                    if (session != null)
-                    {
-                        session.close();
-                    }
-                }*/
+		    transaction.commit();
+		    //log the info to console
+		    Logger.getLogger(CodeForcesCrawler.class.getName()).log(Level.INFO, "{0} {1}", new Object[]
+		    {
+			task, problem.getProblemUrl()
+		    });
+		}
+		catch (HibernateException ee)
+		{
+		    if (transaction != null)
+		    {
+			transaction.rollback();
+		    }
+		    Logger.getLogger(CodeForcesCrawler.class.getName()).log(Level.SEVERE, "Cannot Insert/Update problem into databse: " + problemUrl, e);
+		}
+		finally
+		{
+		    //close the session
+		    if (session != null)
+		    {
+			session.close();
+		    }
+		}
 	    }
 	    catch (Exception ee)
 	    {
 		System.out.println(ee.toString());
 	    }
+	}
+
+	System.out.println("\n\n\n\ntutorial urls\n\n");
+	try
+	{
+
+	    for (String tutorialurl : tutorialset)
+	    {
+		//System.out.println(tutorialurl+"\n\n");
+		Response tutorialres = Jsoup.connect(tutorialurl).execute();
+		Document doc = tutorialres.parse();
+
+		Tutorial tutorial = new Tutorial();
+		tutorial.setContent(doc.getElementsByClass("tutorial").first().text());
+
+		tutorial.setName(baseUrl);
+		tutorialurl = tutorialurl.substring(0, tutorialurl.length() - 10);
+		StringTokenizer tutorialtok = new StringTokenizer(tutorialurl, "/");
+
+		String tempstr = "";
+		while (tutorialtok.hasMoreTokens())
+		{
+		    tempstr = tutorialtok.nextToken();
+		}
+
+		Session session = null;
+		Transaction transaction = null;
+		try
+		{
+		    //start session
+		    session = HibernateUtil.getSessionFactory().openSession();
+		    transaction = session.beginTransaction();
+
+		    //check if problem is already stored in database
+		    String hql = "FROM Tutorial p where p.name = :name";
+		    Tutorial oldProblem = (Tutorial) session.createQuery(hql).setString("name", tempstr).uniqueResult();
+		    String task;
+
+		    //if problem is present in database
+		    if (oldProblem != null)
+		    {
+			//update the old problem
+			task = "updated";
+			//retrieve id of old problem
+			tutorial.setName(oldProblem.getName());
+			session.delete(oldProblem);
+			session.flush();
+			session.save(tutorial);
+		    }
+		    else
+		    {
+			task = "saved";
+			tutorial.setName(tempstr);
+			session.save(tutorial);
+		    }
+
+		    transaction.commit();
+		    //log the info to console
+		    Logger.getLogger(CodeForcesCrawler.class.getName()).log(Level.INFO, "{0} {1}", new Object[]
+		    {
+			task, tutorial.getName()
+		    });
+		}
+		catch (HibernateException ee)
+		{
+		    if (transaction != null)
+		    {
+			transaction.rollback();
+		    }
+		    Logger.getLogger(CodeForcesCrawler.class.getName()).log(Level.SEVERE, "Cannot Insert/Update problem into databse: " + tempstr, ee);
+		}
+		finally
+		{
+		    //close the session
+		    if (session != null)
+		    {
+			session.close();
+		    }
+		}
+
+	    }
+	}
+	catch (Exception e)
+	{
+	    System.out.println(e.getMessage());
 	}
     }
 }

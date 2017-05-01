@@ -17,11 +17,11 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -35,7 +35,7 @@ public class Problem implements Serializable
 {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private int id;
 
     @Column(name = "problem_url", unique = true)
@@ -64,7 +64,7 @@ public class Problem implements Serializable
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "problem")
     private List<SampleInputOutput> sampleInputOutputs;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "tags", joinColumns = @JoinColumn(name = "id"))
     @Column(name = "tag_name")
     private List<String> tags;
@@ -72,8 +72,12 @@ public class Problem implements Serializable
     @Column(name = "explanation")
     private String explanation;
 
+    @Transient
+    private List<Link> links;
+
     public Problem(int id, String problemUrl, String problemStatement, String inputFormat, String outputFormat, String constraints, double timeLimit, List<SampleInputOutput> sampleInputOutputs, List<String> tags, String explanation)
     {
+	this();
 	this.id = id;
 	this.problemUrl = problemUrl;
 	this.problemStatement = problemStatement;
@@ -88,6 +92,7 @@ public class Problem implements Serializable
 
     public Problem()
     {
+	links = new ArrayList<>();
 	tags = new ArrayList<>();
 	sampleInputOutputs = new ArrayList<>();
     }
@@ -182,42 +187,6 @@ public class Problem implements Serializable
 	this.sampleInputOutputs = sampleInputOutputs;
     }
 
-    @Override
-    public String toString()
-    {
-	StringBuilder sb = new StringBuilder();
-
-	sb.append("Id: ");
-	sb.append(getId());
-	sb.append("\n");
-	sb.append("Problem Statement: ");
-	sb.append(getProblemStatement());
-	sb.append("\n");
-	sb.append("InputFormat: ");
-	sb.append(getInputFormat());
-	sb.append("\n");
-	sb.append("OutputFormat: ");
-	sb.append("getOutputFormat()");
-	sb.append("\n");
-	sb.append("constraints: ");
-	sb.append(getConstraints());
-	sb.append("\n");
-	sb.append("timeLimit: ");
-	sb.append(getTimeLimit());
-	sb.append("\n");
-	sb.append("sampleInputOutputs: ");
-	sb.append(getSampleInputOutputs());
-	sb.append("\n");
-	sb.append("tags: ");
-	sb.append(getTags());
-	sb.append("\n");
-	sb.append("explanation: ");
-	sb.append("\n");
-	sb.append(getExplanation());
-
-	return sb.toString();
-    }
-
     public int getId()
     {
 	return id;
@@ -246,5 +215,56 @@ public class Problem implements Serializable
     public void setPlatform(Platform platform)
     {
 	this.platform = platform;
+    }
+
+    public void addLink(Link link)
+    {
+	links.add(link);
+    }
+
+    public List<Link> getLinks()
+    {
+	return links;
+    }
+
+    public void setLinks(List<Link> links)
+    {
+	this.links = links;
+    }
+
+    @Override
+    public String toString()
+    {
+	StringBuilder sb = new StringBuilder();
+
+	sb.append("Id: ");
+	sb.append(getId());
+	sb.append("\n");
+	sb.append("Problem Statement: ");
+	sb.append(getProblemStatement());
+	sb.append("\n");
+	sb.append("InputFormat: ");
+	sb.append(getInputFormat());
+	sb.append("\n");
+	sb.append("OutputFormat: ");
+	sb.append(getOutputFormat());
+	sb.append("\n");
+	sb.append("constraints: ");
+	sb.append(getConstraints());
+	sb.append("\n");
+	sb.append("timeLimit: ");
+	sb.append(getTimeLimit());
+	sb.append("\n");
+	sb.append("sampleInputOutputs: ");
+	sb.append(getSampleInputOutputs());
+	sb.append("\n");
+	sb.append("tags: ");
+	sb.append(getTags());
+	sb.append("\n");
+	sb.append("explanation: ");
+	sb.append("\n");
+	sb.append(getExplanation());
+
+	return sb.toString();
     }
 }

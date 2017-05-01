@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public enum Platform
 {
-    Codeforces, Topcoder, HackerEarth, CodeChef, HackerRank, Spoj;
+    Codeforces, Topcoder, HackerEarth, CodeChef, HackerRank, Spoj, HelpACoder;
 
     private static final Map<Integer, Platform> INT_TO_ENUM_MAP;
 
@@ -27,9 +27,12 @@ public enum Platform
 	}
     }
 
-    public static Platform fromOrdinal(int n)
+    public static Platform fromOrdinal(Integer n)
     {
+	if (n == null)
+	{
+	    return null;
+	}
 	return INT_TO_ENUM_MAP.get(n);
     }
-
 }

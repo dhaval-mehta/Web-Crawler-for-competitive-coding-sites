@@ -6,8 +6,10 @@
 package service;
 
 import hibernate.HibernateUtil;
+import java.util.ArrayList;
 import java.util.List;
 import model.Tutorial;
+import model.TutorialInfo;
 import org.hibernate.Query;
 import org.hibernate.Session;
 
@@ -20,21 +22,25 @@ public class TutorialService
 
     public static Tutorial getTutorial(String name)
     {
-	System.err.println(name);
 	Session session = HibernateUtil.getSessionFactory().openSession();
 	Tutorial tutorial = (Tutorial) session.get(Tutorial.class, name);
-	System.err.println(tutorial);
 	session.close();
 	return tutorial;
     }
 
-    public static List<String> getTutorialList()
+    public static List<TutorialInfo> getTutorialList()
     {
 	Session session = HibernateUtil.getSessionFactory().openSession();
 	String hql = "SELECT t.name FROM Tutorial t";
 	Query query = session.createQuery(hql);
 	List<String> tutorialList = query.list();
 	session.close();
-	return tutorialList;
+	List<TutorialInfo> tutorialInfos = new ArrayList<>();
+	tutorialList.forEach((string) ->
+	{
+	    tutorialInfos.add(new TutorialInfo(string));
+	});
+
+	return tutorialInfos;
     }
 }

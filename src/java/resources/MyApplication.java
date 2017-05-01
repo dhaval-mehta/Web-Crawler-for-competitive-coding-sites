@@ -3,13 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package model;
+package resources;
+
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
 /**
  *
  * @author Dhaval
  */
-public enum ExitStatus
+@ApplicationPath("webapi")
+public class MyApplication extends Application
 {
-    RuntimeError, CompileTimeError, Success, TimeLimitExceeded;
+
 }

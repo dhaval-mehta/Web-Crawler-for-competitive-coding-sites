@@ -80,8 +80,7 @@ public class ContestService
 
     private static void addCodeforcesContests() throws MalformedURLException, ParseException, IOException
     {
-	String url;
-	url = UriBuilder.fromUri(CODEFORCES_CONTEST_PAGE_URL).queryParam(CODEFORCES_QUERY_PARAMETER_NAME, CODEFORCES_QUERY_PARAMETER_VALUE).build().toString();
+	String url = UriBuilder.fromUri(CODEFORCES_CONTEST_PAGE_URL).queryParam(CODEFORCES_QUERY_PARAMETER_NAME, CODEFORCES_QUERY_PARAMETER_VALUE).build().toString();
 	Document document = Jsoup.connect(url).get();
 	Element pageContent = document.getElementById("pageContent");
 	Element datatable = pageContent.getElementsByClass("datatable").first();
@@ -119,7 +118,7 @@ public class ContestService
 
 	Platform platform = Platform.CodeChef;
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < dataTable.size() - 1; i++)
 	{
 	    Element Contests = dataTable.get(i);
 	    Elements rows = Contests.getElementsByTag("tr");

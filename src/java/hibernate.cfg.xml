@@ -40,17 +40,17 @@ made subject to such option by the copyright holder.
 Contributor(s):
 -->
 <hibernate-configuration>
-    <session-factory>
-        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
-        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/codemine?zeroDateTimeBehavior=convertToNull</property>
-        <property name="hibernate.connection.username">root</property>
-        <property name="show_sql">true</property>
-        <property name="format_sql">true</property>
-        <property name="hibernate.enable_lazy_load_no_trans">true</property>
-
-        <mapping class="model.Problem"/>
-        <mapping class="model.SampleInputOutput"/>
-        <mapping class="model.Tutorial"/>
-    </session-factory>
+  <session-factory>
+    <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+    <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/codemine?zeroDateTimeBehavior=convertToNull</property>
+    <property name="hibernate.connection.username">root</property>
+    <property name="show_sql">true</property>
+    <property name="format_sql">true</property>
+    <property name="hibernate.enable_lazy_load_no_trans">true</property>
+    <mapping class="model.Problem"/>
+    <mapping class="model.SampleInputOutput"/>
+    <mapping class="model.Tutorial"/>
+    <mapping class="model.User"/>
+  </session-factory>
 </hibernate-configuration>

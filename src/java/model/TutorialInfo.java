@@ -5,50 +5,28 @@
  */
 package model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author Dhaval
  */
-@Entity
-@Table(name = "tutorial")
-@XmlRootElement
-public class Tutorial implements Serializable
+public class TutorialInfo
 {
 
-    @Id
     private String name;
-
-    private String content;
-
-    @Transient
     private List<Link> links;
 
-    public Tutorial()
+    public TutorialInfo()
     {
 	links = new ArrayList<>();
     }
 
-    public Tutorial(String name, String content)
+    public TutorialInfo(String name)
     {
 	this();
 	this.name = name;
-	this.content = content;
-
-    }
-
-    @Override
-    public String toString()
-    {
-	return "Tutorial{" + "name=" + getName() + ", content=" + getContent() + '}';
     }
 
     public String getName()
@@ -59,16 +37,6 @@ public class Tutorial implements Serializable
     public void setName(String name)
     {
 	this.name = name;
-    }
-
-    public String getContent()
-    {
-	return content;
-    }
-
-    public void setContent(String content)
-    {
-	this.content = content;
     }
 
     public void addLink(Link link)
@@ -85,4 +53,5 @@ public class Tutorial implements Serializable
     {
 	this.links = links;
     }
+
 }

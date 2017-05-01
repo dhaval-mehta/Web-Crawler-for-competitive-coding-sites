@@ -5,6 +5,8 @@
  */
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -19,13 +21,16 @@ public class ProblemInfo
     private String title;
     private Platform platform;
     private String problemUrl;
+    private List<Link> links;
 
     public ProblemInfo()
     {
+	links = new ArrayList<>();
     }
 
     public ProblemInfo(int id, String title, Platform platform, String problemUrl)
     {
+	this();
 	this.id = id;
 	this.title = title;
 	this.platform = platform;
@@ -70,5 +75,20 @@ public class ProblemInfo
     public void setPlatform(Platform platform)
     {
 	this.platform = platform;
+    }
+
+    public void addLink(Link link)
+    {
+	links.add(link);
+    }
+
+    public List<Link> getLinks()
+    {
+	return links;
+    }
+
+    public void setLinks(List<Link> links)
+    {
+	this.links = links;
     }
 }

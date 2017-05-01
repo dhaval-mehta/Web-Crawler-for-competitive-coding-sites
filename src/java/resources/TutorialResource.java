@@ -13,8 +13,12 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
+import model.Link;
 import model.Tutorial;
+import model.TutorialInfo;
 import service.TutorialService;
 
 /**
@@ -29,9 +33,8 @@ public class TutorialResource
 
     @GET
     @Path("/{name}")
-    public Tutorial getTutorial(@PathParam("name") String name)
+    public Tutorial getTutorial(@PathParam("name") String name, @Context UriInfo uriInfo)
     {
-	System.err.println(name);
 	Tutorial tutorial = TutorialService.getTutorial(name);
 
 	if (tutorial == null)
@@ -39,15 +42,36 @@ public class TutorialResource
 	    throw new NotFoundException();
 	}
 
+	String href = uriInfo.getBaseUriBuilder()
+		.path(TutorialResource.class)
+		.path(name)
+		.build().toString();
+	String rel = "self";
+	Link link = new Link(href, rel);
+	tutorial.addLink(link);
 	return tutorial;
     }
 
     @GET
-    public List<String> getTutorialList()
+    public List<TutorialInfo> getTutorialList(@Context UriInfo uriInfo)
     {
 	try
 	{
-	    return TutorialService.getTutorialList();
+	    List<TutorialInfo> tutorials = TutorialService.getTutorialList();
+
+	    tutorials.forEach((tutorialInfo) ->
+	    {
+		String href = uriInfo.getBaseUriBuilder()
+			.path(TutorialResource.class)
+			.path(tutorialInfo.getName())
+			.build()
+			.toString();
+		String rel = "self";
+		Link link = new Link(href, rel);
+		tutorialInfo.addLink(link);
+	    });
+
+	    return tutorials;
 	}
 	catch (Exception e)
 	{
